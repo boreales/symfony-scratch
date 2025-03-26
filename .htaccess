@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /symfony-scratch/
+
+# Rediriger toutes les requêtes vers le sous-dossier /public
+RewriteCond %{REQUEST_URI} !^/symfony-scratch/public/
+RewriteRule ^(.*)$ /symfony-scratch/public/$1 [L,QSA]

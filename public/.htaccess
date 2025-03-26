@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Définition du dossier racine pour éviter les erreurs 404
+RewriteBase /symfony-scratch/
+
+# Redirige toutes les requêtes vers index.php sauf si un fichier ou dossier existe
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

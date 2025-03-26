@@ -1,0 +1,7 @@
+home:
+  path: /
+  controller: App\Controller\HomeController::index
+
+about:
+  path: /events
+  controller: App\Controller\EventController::list
