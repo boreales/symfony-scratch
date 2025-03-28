@@ -6,7 +6,7 @@ use App\Router as Router;
 const prefix = '/symfony-scratch';
 
 // Charger les routes
-$routes = require __DIR__ . '/../config/routes.php';
+$routes = require __DIR__ . '/../config/routes.php.old';
 
 // Initialiser et exécuter le routeur
 $router = new Router($routes);

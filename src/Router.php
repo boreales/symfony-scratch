@@ -2,21 +2,54 @@
 
 namespace App;
 
+use App\Attributes\Route;
+
 class Router
 {
     private array $routes;
 
     public function __construct(array $routes)
     {
-        $this->routes = $this->parseYaml('../config/routes.yaml');
+        //$this->routes = $this->parseYaml('../config/routes.yaml');
+        $this->registerRoutes();
+    }
+
+    private function registerRoutes()
+    {
+        $controllerFiles = glob(__DIR__ . '/Controller/*.php');
+
+        foreach ($controllerFiles as $file) {
+            require_once $file;
+            $className = 'App\\Controller\\' . basename($file, '.php');
+
+            if (!class_exists($className)) {
+                continue;
+            }
+
+            $reflection = new \ReflectionClass($className);
+            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                $attributes = $method->getAttributes(Route::class);
+
+                foreach ($attributes as $attribute) {
+                    $instance = $attribute->newInstance();
+                    $this->routes[$instance->path] = [$className, $method->getName()];
+                }
+            }
+        }
     }
 
 
-    private function dispatch(string $controllerAction, array $params = [])
+//    private function dispatch(string $controllerAction, array $params = [])
+//    {
+//        list($controllerClass, $method) = explode('::', $controllerAction);
+//        $controllerClass = new $controllerClass();
+//        call_user_func_array([$controllerClass, $method], $params);
+//    }
+
+    private function dispatch(string $controllerClass, string $method, array $params = [])
     {
-        list($controllerClass, $method) = explode('::', $controllerAction);
-        $controllerClass = new $controllerClass();
-        call_user_func_array([$controllerClass, $method], $params);
+        $controllerInstance = new $controllerClass();
+        call_user_func_array([$controllerInstance, $method], $params);
     }
 
     private function parseYaml($file)
@@ -49,13 +82,13 @@ class Router
 
     public function resolve(string $requestUri)
     {
-        foreach ($this->routes as $route) {
-            $pathPattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9-_]+)', $route['path']);
+        foreach ($this->routes as $path => $controllerData) {
+            $pathPattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9-_]+)', $path);
             $regex = '#^' . prefix.$pathPattern . '$#';
 
             if (preg_match($regex, $requestUri, $matches)) {
                 array_shift($matches);
-                $this->dispatch($route['controller'], $matches);
+                $this->dispatch($controllerData[0], $controllerData[1], $matches);
                 return;
             }
         }

@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
-class EventController
-{
+use App\Attributes\Route;
+
+class EventController{
+
+    #[Route('/events')]
     public function list()
     {
         echo "<h1>Bienvenue sur la page des événements</h1>";
